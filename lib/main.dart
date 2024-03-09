@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
+  globals.env = dotenv.load(fileName: ".env");
 }
 
 class MyApp extends StatelessWidget {

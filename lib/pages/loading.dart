@@ -23,6 +23,7 @@ class _LoadingState extends State<Loading> {
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.get("token");
+    await globals.env;
 
     if (token != null) {
       final resp = await http.get(
