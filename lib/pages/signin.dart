@@ -1,9 +1,10 @@
 import 'dart:convert';
 
-import 'package:employzer/pages/home.dart';
+import 'package:employzer/pages/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -12,31 +13,14 @@ class SignIn extends StatefulWidget {
   State<SignIn> createState() => _SignInState();
 }
 
-class LoginResponse {
-  final String status;
-  final Map<String, String>? data;
-
-  const LoginResponse({required this.status, required this.data});
-
-  factory LoginResponse.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'status': String status,
-        'data': Map<String, String> data,
-      } =>
-        LoginResponse(status: status, data: data),
-      _ => throw const FormatException('Failed to load login response: '),
-    };
-  }
-}
-
 class _SignInState extends State<SignIn> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController pwController = TextEditingController();
 
   void _signIn() async {
+    final url = dotenv.env['BACK_END'];
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:4017/api/auth/signin'),
+      Uri.parse('$url/api/auth/signin'),
       body: {
         'email': emailController.text,
         'password': pwController.text,
@@ -59,10 +43,17 @@ class _SignInState extends State<SignIn> {
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const Home()),
+          MaterialPageRoute(builder: (context) => const Loading()),
           (Route<dynamic> route) => false,
         );
+        return;
       }
+    }
+    if (context.mounted) {
+      const snackBar = SnackBar(
+        content: Text('Unknown error'),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 

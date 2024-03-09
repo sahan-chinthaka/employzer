@@ -1,9 +1,13 @@
 import 'dart:convert';
 
+import 'package:employzer/globals.dart' as globals;
 import 'package:employzer/pages/home.dart';
 import 'package:employzer/pages/signin.dart';
+import 'package:employzer/providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Loading extends StatefulWidget {
@@ -24,10 +28,11 @@ class _LoadingState extends State<Loading> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.get("token");
     await globals.env;
+    final url = dotenv.env['BACK_END'];
 
     if (token != null) {
       final resp = await http.get(
-        Uri.parse("http://127.0.0.1:4017/api/auth/"),
+        Uri.parse("$url/api/auth/"),
         headers: {
           "Authorization": "Bearer $token",
         },
@@ -37,11 +42,20 @@ class _LoadingState extends State<Loading> {
         if (context.mounted) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const Home()),
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider(
+                create: (context) => UserProvider(
+                  email: json["message"]?["email"],
+                  name: json["message"]?["email"],
+                  role: json["message"]?["role"],
+                ),
+                child: const Home(),
+              ),
+            ),
             (Route<dynamic> route) => false,
           );
-          return;
         }
+        return;
       }
     }
 
