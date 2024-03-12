@@ -27,14 +27,15 @@ class _LoadingState extends State<Loading> {
   void _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.get("token");
+    final uid = prefs.get("uid");
     await globals.env;
     final url = dotenv.env['BACK_END'];
 
-    if (token != null) {
+    if (token != null && uid != null) {
       final resp = await http.get(
-        Uri.parse("$url/api/auth/"),
+        Uri.parse("$url/api/users/$uid"),
         headers: {
-          "Authorization": "Bearer $token",
+          "x-access-token": token.toString(),
         },
       );
       final json = jsonDecode(resp.body);
@@ -45,9 +46,9 @@ class _LoadingState extends State<Loading> {
             MaterialPageRoute(
               builder: (context) => ChangeNotifierProvider(
                 create: (context) => UserProvider(
-                  email: json["message"]?["email"],
-                  name: json["message"]?["email"],
-                  role: json["message"]?["role"],
+                  email: json["data"]?["email"],
+                  name: json["data"]?["email"],
+                  role: json["data"]?["role"],
                 ),
                 child: const Home(),
               ),

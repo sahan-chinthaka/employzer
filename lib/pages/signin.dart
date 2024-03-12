@@ -39,6 +39,7 @@ class _SignInState extends State<SignIn> {
     } else if ((json["status"] == "success")) {
       final prefs = await SharedPreferences.getInstance();
       prefs.setString("token", json["data"]?["token"]);
+      prefs.setString("uid", json["data"]?["id"]);
 
       if (context.mounted) {
         Navigator.pushAndRemoveUntil(
